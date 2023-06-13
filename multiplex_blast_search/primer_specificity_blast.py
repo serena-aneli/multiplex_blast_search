@@ -1,6 +1,5 @@
 import pandas
 import numpy
-import argparse
 from Bio.Seq import Seq
 from Bio.Blast import NCBIWWW
 from Bio.Blast import NCBIXML
