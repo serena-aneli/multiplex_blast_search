@@ -1,3 +1,7 @@
+import argparse
+
+from .primer_specificity_blast import read_primer_file, blast_search, alignment_parsing, find_amplicons
+
 parser = argparse.ArgumentParser(description='Primer blast search and amplicon size check')
 parser.add_argument(
 	'primer_list_path', metavar='primers', type=str, 
