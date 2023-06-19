@@ -8,6 +8,10 @@ def main():
 		'primer_list_path', metavar='primers', type=str, 
 		help='path to the primer list files'
 		)
+	parser.add_argument(
+		'output_path', metavar='output', type=str, 
+		help='name of the output file'
+		)	
 
 	args = parser.parse_args()
 
@@ -20,4 +24,4 @@ def main():
 		search = row['marker'] + '_' + str(row['type'])
 		alignment_parsing(search + '.xml')
 
-	find_amplicons('primers.txt', 'output_prova.tsv')
+	find_amplicons(args.primer_list_path, args.output_path)
