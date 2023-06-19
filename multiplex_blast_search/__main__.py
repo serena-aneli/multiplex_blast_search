@@ -15,7 +15,6 @@ def main():
 
 	args = parser.parse_args()
 
-
 	tab = read_primer_file(args.primer_list_path)
 
 	for index, row in tab.iterrows():

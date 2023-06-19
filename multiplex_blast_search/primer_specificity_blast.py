@@ -37,7 +37,7 @@ def blast_search(directory, marker, type, primer_seq):
 	### save results
 	with open(file_name, 'w') as save_file: 
 		blast_results = result_handle.read() 
-		save_file.write(blast_results)
+		save_file.write(blast_results.replace('CREATE_VIEW', '')) #.replace('CREATE_VIEW', '') has been added to deal with the NCBI bug. The current version of Biopython on PyPy is not updated. When it will be updated, this part would not be necessary anymore.
 
 
 ##########################
