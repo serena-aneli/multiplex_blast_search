@@ -101,7 +101,7 @@ def find_amplicons(primers_file, output_file):
 
 	### first iteration over primer pairs
 		primer_df = primer_df.set_index(primer_df['marker'] + '_' + primer_df['type'].astype('str'))
-		for i, j in itertools.combinations(primer_df.index, 2):
+		for i, j in itertools.combinations_with_replacement(primer_df.index, 2):
 			print(i,j)
 			df_i = pandas.read_excel(i + '.xlsx') 
 			#if (i, j) != ('FGA_1', 'FGA_2'): continue
