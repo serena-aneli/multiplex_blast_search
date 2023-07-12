@@ -32,8 +32,7 @@ def blast_search(directory, marker, type, primer_seq):
 				return "{directory}/{marker}_{type}.xml already downloaded".format(directory = directory, marker = marker, type = type)
 
 	### blast search
-	print('cacca pupu')
-	result_handle = NCBIWWW.qblast(program="blastn", database="nt", sequence=primer_seq, format_type='XML', short_query=True, megablast=True, hitlist_size = 5000, alignments=5000, expect = 1000) 
+	result_handle = NCBIWWW.qblast(program="blastn", database="nt", sequence=primer_seq, format_type='XML', short_query=True, megablast=True, hitlist_size = 5000, alignments=5000, expect = 10000) 
 
 	### save results
 	with open(file_name, 'w') as save_file: 
