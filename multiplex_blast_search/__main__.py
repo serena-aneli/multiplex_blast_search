@@ -15,12 +15,12 @@ def main():
 
 	args = parser.parse_args()
 
-	tab = read_primer_file(args.primer_list_path)
+	primer_df = read_primer_file(args.primer_list_path)
 
-	for index, row in tab.iterrows():
+	for index, row in primer_df.iterrows():
 		print('searching {marker}, {pair} in BLAST'.format(marker=row['marker'], pair=row['type']))
 		blast_search('blast_results', row['marker'], row['type'], row['seq']) # NON MI STAMPA IL MESSAGGIO CHE HA TROVATO
 		search = row['marker'] + '_' + str(row['type'])
 		alignment_parsing(search + '.xml')
 
-	find_amplicons(args.primer_list_path, args.output_path)
+	find_amplicons(primer_df, args.output_path)
