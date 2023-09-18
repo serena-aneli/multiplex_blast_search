@@ -6,10 +6,12 @@ from Bio.Blast import NCBIXML
 import csv
 import pickle
 import os.path
-from pathlib import Path
 import itertools
 
 ###TODO: SE VOGLIAMO METTERE AL POSTO DI 1 E 2 REDLABEL E REDNOT CONTROLLARE QUANDO USO INT
+
+class NoAlignmentError(Exception):
+	pass
 
 #################
 ### Read file ###
@@ -24,34 +26,26 @@ def read_primer_file(file_path):
 ####################
 
 # TODO: NON CREA LA CARTELLA DIRECTORY
-def blast_search(directory, marker, type, primer_seq):
-	directory = os.getcwd()
-	file_name = Path("{directory}/{marker}_{type}.xml".format(directory = directory, marker = marker, type = type))
-
-	if file_name.is_file():
-				return "{directory}/{marker}_{type}.xml already downloaded".format(directory = directory, marker = marker, type = type)
-
+def blast_search(path, primer_seq, megablast):
 	### blast search
-	result_handle = NCBIWWW.qblast(program="blastn", database="nt", sequence=primer_seq, format_type='XML', short_query=True, megablast=True, hitlist_size = 5000, alignments=5000, expect = 10000) 
+	result_handle = NCBIWWW.qblast(program="blastn", database="nt", sequence=primer_seq, format_type='XML', short_query=True, megablast=megablast, descriptions=1000, hitlist_size = 5000, alignments=5000, expect = 100000) 
+	# con expect = 100000000 --> ConnectionResetError: [Errno 54] Connection reset by peer (the Request-URI is too large for the server to process, so it's dropping the connection)
+	# anche con Descriptions=5000 mi dice la stessa cosa
 
 	### save results
-	with open(file_name, 'w') as save_file: 
-		blast_results = result_handle.read() 
-		save_file.write(blast_results.replace('CREATE_VIEW', '')) #.replace('CREATE_VIEW', '') has been added to deal with the NCBI bug. The current version of Biopython on PyPy is not updated. When it will be updated, this part would not be necessary anymore.
-
+	with open(path, 'wt') as save_file: 
+		blast_results = result_handle.read().replace('CREATE_VIEW', '')
+		save_file.write(blast_results) #.replace('CREATE_VIEW', '') has been added to deal with the NCBI bug. The current version of Biopython on PyPy is not updated. When it will be updated, this part would not be necessary anymore.
 
 ##########################
 ### Alignments parsing ###
 ##########################
 # funzione che parserizza e restituisce la tabella finale
 
-def alignment_parsing(file_name):
-	file_name = Path(file_name)
-	with open(file_name) as saved_file:
+def alignment_parsing(xml_path, excel_path):
+	with open(xml_path, 'rt') as saved_file:
 		blast_records = list(NCBIXML.parse(saved_file))
 	blast_records = list(blast_records)
-
-	marker, type = os.path.splitext(file_name.name)[0].rsplit('_', maxsplit=1)
 
 	### collect results and create table
 	acc = []
@@ -72,10 +66,13 @@ def alignment_parsing(file_name):
 					'aln_sbjct_end': hsp.sbjct_end,
 					'aln_strand': hsp.strand[1],
 				})
+	if len(acc) == 0:
+		raise NoAlignmentError()
+	#print(len(acc))
 	tab = pandas.DataFrame.from_records(acc)
 	tab[['gi', 'seq_name']] = tab['sbjct_id'].str.split("|", expand = True).iloc[:,[1,3]]
-	file_excel = os.path.splitext(file_name.name)[0] + '.xlsx'	
-	tab.to_excel(file_excel, index=False)
+
+	tab.to_excel(excel_path, index=False)
 	#reds['red' + '_' + str(count) + '_' + primer] = tab
 
 
@@ -85,10 +82,8 @@ def alignment_parsing(file_name):
 
 # al posto di fare rossi e unlabeled faccio tutti contro tutti
 
-def find_amplicons(primers_file, output_file):
+def find_amplicons(primer_df, output_file):
 	
-	primer_df = read_primer_file(primers_file)
-
 	#output_file='/content/drive/MyDrive/FORENSIC_GENETICS/progetti/artefatti/amplicons_found_hitlist500.tsv'
 	with open(output_file, 'w') as found_alignments: 
 
